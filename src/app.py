@@ -1,4 +1,5 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify 
+import mysql.connector
 
 app = Flask(__name__)
 
@@ -10,7 +11,7 @@ password = ""
 
 #funcion conexion
 def conexion():
-    conn = connect(host = host, database = database, username = username, password = password)
+    conn = mysql.connector.connect(host = host, database = database, username = username, password = password)
     return conn
     
 
@@ -22,6 +23,18 @@ def home():
 @app.get("/usuarios")
 def get_users():
     conn = conexion()
+    cursor = conn.cursor()
+    sql = 'SELECT * FROM usuarios'
+    cursor.execute(sql)
+    datos = cursor.fetchall()  # obtener todos los datos de la consulta
+    usuarios = []
+    for fila in datos:
+        usuario = {'nombres': fila[0], 'telefono': fila[1]}
+        usuarios.append(usuario)
+    cursor.close()
+    conn.close()
+
+    return jsonify({'usuarios': usuarios})   
 
 
 @app.route("/usuario")
